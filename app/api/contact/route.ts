@@ -28,8 +28,12 @@ export async function POST(req: Request) {
 
     console.log("✅ Resend response:", data);
     return NextResponse.json({ success: true, data });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ Email send error:", error);
-    return NextResponse.json({ success: false, error: error.message || "Unknown error" }, { status: 500 });
+
+    let message = "Unknown error";
+    if (error instanceof Error) message = error.message;
+
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }
