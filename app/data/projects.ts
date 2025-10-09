@@ -75,7 +75,7 @@ export const projects: Project[] = [
       "/projects/modern-edge-house/9.jpg",
       "/projects/modern-edge-house/10.jpg",
       "/projects/modern-edge-house/11.jpg",
-      "/projects/modern-edge-house/12.jpg",
+      // "/projects/modern-edge-house/12.jpg",
     ],
   },
   // The "More Projects" card (always included as last card)

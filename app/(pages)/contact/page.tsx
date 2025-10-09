@@ -102,8 +102,8 @@ export default function ContactPage() {
           <div>
             <h2 className="text-3xl font-light mb-4">Contact</h2>
             <p className="text-gray-400 text-lg leading-relaxed">
-              <span className="block">+91 98100 12345</span>
-              <span className="block">+91 98765 43210</span>
+              <span className="block">+91 9999770200 </span>
+              <span className="block">+91 9667599619</span>
             </p>
           </div>
 
@@ -118,10 +118,10 @@ export default function ContactPage() {
                 studiosolace.arch@gmail.com
               </a>
               <a
-                href="mailto:akashthakran77.arch@gmail.com"
+                href="mailto:akashthakran77@gmail.com"
                 className="text-white hover:underline transition-all duration-300 block"
               >
-                akashthakran77.arch@gmail.com
+                akashthakran77@gmail.com
               </a>
               <a
                 href="mailto:sakshichauhan.arch@gmail.com"
