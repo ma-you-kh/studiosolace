@@ -21,7 +21,7 @@ export const projects: Project[] = [
       "The TOSTEM Experience Centre in Ludhiana is designed as an immersive space where visitors can explore the elegance and innovation of Japanese-engineered windows and doors. Created to reflect TOSTEM’s commitment to quality and modern living, the centre allows customers to see, touch, and experience a wide range of products in real-life settings. With thoughtfully curated displays, refined interiors, and a seamless blend of functionality and aesthetics, the experience centre serves as both a showroom and an inspiration hub—helping clients envision how TOSTEM solutions can transform their spaces.",
     location: "Ludhiana, India",
     client: "Private Client",
-    category: "Residential",
+    category: "Commercial",
     // year: "2022",
     gallery: [
       "/projects/tostem-experience-centre/1.jpg",
