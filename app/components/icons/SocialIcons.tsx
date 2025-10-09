@@ -62,7 +62,7 @@ const SocialIcons: React.FC = () => {
 
       {/* Mail */}
       <a
-        href="mailto:studiosolace.arch@gmail.com"
+        href={`mailto:studiosolace.arch@gmail.com,info@solacestudio.in?subject=Project%20Inquiry&body=Hi%20Studio%20Solace,%0D%0A%0D%0AI'd%20love%20to%20discuss%20a%20new%20project...`}
         aria-label="Mail"
         className="btn btn-ghost btn-circle p-2"
       >

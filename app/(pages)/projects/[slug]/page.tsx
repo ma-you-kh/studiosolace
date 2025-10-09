@@ -1,17 +1,41 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { projects } from "../../../data/projects";
 import { notFound, useParams } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function ProjectPage() {
-  const { slug } = useParams<{ slug: string }>(); // ✅ Properly typed, no any
+  const { slug } = useParams<{ slug: string }>();
 
+  // Find project
   const project = projects.find((p) => p.slug === slug);
-  const [currentIndex, setCurrentIndex] = useState(0);
 
+  // Hooks must be declared unconditionally
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [loaded, setLoaded] = useState(false);
+
+  // Only run effect if project exists
+  useEffect(() => {
+    if (!project) return;
+
+    const preload = (src: string): void => {
+      const img = new window.Image();
+      img.src = src;
+    };
+
+    const next = project.gallery[(currentIndex + 1) % project.gallery.length];
+    const prev =
+      project.gallery[
+        (currentIndex - 1 + project.gallery.length) % project.gallery.length
+      ];
+
+    preload(next);
+    preload(prev);
+  }, [currentIndex, project]);
+
+  // Now safely handle missing project after hooks
   if (!project) return notFound();
 
   const nextImage = () =>
@@ -27,12 +51,10 @@ export default function ProjectPage() {
   return (
     <section
       className="min-h-screen text-white px-8 md:px-16 py-16 flex flex-col items-start"
-      style={{
-        paddingTop: "calc(40vh - 10%)",
-      }}
+      style={{ paddingTop: "calc(40vh - 10%)" }}
     >
       {/* Project Title */}
-      <h1 className="md:text-6xl font-light mb-15 tracking-tight">
+      <h1 className="md:text-6xl font-light mb-12 tracking-tight">
         {project.title.toUpperCase()}
       </h1>
 
@@ -40,9 +62,6 @@ export default function ProjectPage() {
       <div className="w-full flex flex-col mt-1 md:flex-row gap-10">
         {/* Left: Details */}
         <div className="flex-1 flex flex-col justify-start items-start p-4">
-          {/* <h2 className="text-3xl font-light mt-4 mb-4 underline">
-            Project Details
-          </h2> */}
           <p className="text-gray-300 text-xl leading-relaxed mb-4">
             {project.description}
           </p>
@@ -56,10 +75,6 @@ export default function ProjectPage() {
               <span className="font-semibold text-white">Client:</span>{" "}
               {project.client}
             </li>
-            {/* <li>
-              <span className="font-semibold text-white">Year:</span>{" "}
-              {project.year}
-            </li> */}
             <li>
               <span className="font-semibold text-white">Category:</span>{" "}
               {project.category}
@@ -71,10 +86,17 @@ export default function ProjectPage() {
         <div className="flex-none w-full md:w-[45vw] relative flex items-center justify-center">
           <div className="relative w-full aspect-[16/9] overflow-hidden rounded-xl border border-neutral-800 shadow-xl">
             <Image
+              key={currentIndex}
               src={project.gallery[currentIndex]}
               alt={`${project.title} image ${currentIndex + 1}`}
               fill
-              className="object-cover transition-all duration-500"
+              priority={currentIndex === 0}
+              onLoadingComplete={() => setLoaded(true)}
+              className={`object-cover transition-opacity duration-500 ${
+                loaded ? "opacity-100" : "opacity-0"
+              }`}
+              sizes="(max-width: 768px) 100vw, 45vw"
+              quality={85}
             />
 
             {/* Arrows */}
