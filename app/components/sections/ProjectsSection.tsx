@@ -61,35 +61,37 @@ export default function ProjectsSection() {
       });
 
       /* 🃏 Deck setup */
-      const overlap = 50;
-      const baseZ = cards.length;
-      gsap.set(deck, { transformPerspective: 1000 });
-      gsap.set(cards, {
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        xPercent: -50,
-        yPercent: -50,
-        rotateY: 0,
-        transformOrigin: "center center",
-        willChange: "transform, opacity, filter",
-      });
+const baseCardRect = cards[0].getBoundingClientRect();
+const baseCardW = baseCardRect.width;
 
-      cards.forEach((card, i) => {
-        gsap.set(card, {
-          x: (cards.length - i - 1) * overlap,
-          zIndex: baseZ - i,
-          scale: 1,
-          opacity: 1,
-          filter: "brightness(1)",
-        });
-      });
+// Make overlap and gap relative (no fixed pixels)
+const overlap = baseCardW * 0.1; // 10% of card width
+const gap = window.innerWidth * 0.18; // 18% of viewport width
+const n = cards.length;
 
-      /* 🧮 Measurements */
-      const baseCardRect = cards[0].getBoundingClientRect();
-      const baseCardW = baseCardRect.width;
-      const gap = Math.max(120, window.innerWidth * 0.2);
-      const n = cards.length;
+const baseZ = cards.length;
+gsap.set(deck, { transformPerspective: 1000 });
+gsap.set(cards, {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  xPercent: -50,
+  yPercent: -50,
+  rotateY: 0,
+  transformOrigin: "center center",
+  willChange: "transform, opacity, filter",
+});
+
+cards.forEach((card, i) => {
+  gsap.set(card, {
+    x: (cards.length - i - 1) * overlap,
+    zIndex: baseZ - i,
+    scale: 1,
+    opacity: 1,
+    filter: "brightness(1)",
+  });
+});
+
 
       // --- helper functions ---
       const computeTotalTravel = (): number => {
@@ -98,15 +100,31 @@ export default function ProjectsSection() {
       };
 
       // Compute exact deck translation needed in pixels
-      const computeDeckFinalX = (multiplier = 1.5): number => {
-  const totalTravel = computeTotalTravel();
-  const viewportWidth = window.innerWidth;
+      // Compute exact deck translation needed in pixels
+      const computeDeckFinalX = (multiplier = 1.7): number => {
+        const totalTravel = computeTotalTravel(); // already (n-1)*(cardW + gap)
+        const viewportCenterX = window.innerWidth / 2;
 
-  // Shift left just enough to move deck by (totalTravel × multiplier)
-  // and keep the last card nicely exiting the viewport.
-  const requiredX = -(totalTravel * multiplier - viewportWidth / 2);
-  return Math.round(requiredX);
-};
+        // Get the last card (right-most in the fanned layout)
+        const lastCard = cards[n - 1];
+        if (!lastCard)
+          return Math.round(-(totalTravel * multiplier - viewportCenterX));
+
+        const lastRect = lastCard.getBoundingClientRect();
+        const lastCenterX = lastRect.left + lastRect.width / 2;
+
+        // Base shift required to bring the last card's center to the viewport center
+        // (positive means move deck right; negative means move deck left)
+        const baseShift = viewportCenterX - lastCenterX;
+
+        // Extra drift computed from multiplier: (multiplier - 1) of the totalTravel
+        // We subtract because baseShift brings last card to center; multiplier > 1 should push it further left.
+        const extra = -(multiplier - 1) * totalTravel;
+
+        const requiredX = baseShift + extra;
+
+        return Math.round(requiredX);
+      };
 
       /* --- Phase 1: Fan Out --- */
       const fanOutTl = gsap.timeline({
