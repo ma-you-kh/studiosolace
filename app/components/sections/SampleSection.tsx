@@ -32,7 +32,7 @@ export default function SampleSection() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
 
-  // 🧲 Pinning (reduced scrub + shorter hold)
+  // --- All existing GSAP logic unchanged ---
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
@@ -41,9 +41,9 @@ export default function SampleSection() {
         scrollTrigger: {
           trigger: section,
           start: "top top",
-          end: "+=120%", // 🔹 shorter hold (was 160%)
+          end: "+=120%",
           pin: true,
-          scrub: 0.4, // 🔹 snappier scrub (was 0.8)
+          scrub: 0.4,
           anticipatePin: 1,
         },
       });
@@ -51,7 +51,6 @@ export default function SampleSection() {
     return () => ctx.revert();
   }, []);
 
-  // 🪄 Hover Effects (unchanged)
   useEffect(() => {
     cardsRef.current.forEach((card) => {
       if (!card) return;
@@ -97,7 +96,6 @@ export default function SampleSection() {
     });
   }, []);
 
-  // 🧭 Zoomable popup (unchanged)
   useEffect(() => {
     if (!imgRef.current) return;
     const img = imgRef.current;
@@ -119,10 +117,8 @@ export default function SampleSection() {
     };
   }, [selectedImage]);
 
-  // 🚫 Scroll Lock (unchanged)
   useEffect(() => {
     const preventTouch = (e: TouchEvent) => e.preventDefault();
-
     if (selectedImage) {
       const scrollbarWidth =
         window.innerWidth - document.documentElement.clientWidth;
@@ -135,18 +131,14 @@ export default function SampleSection() {
       document.body.style.paddingRight = "";
       document.removeEventListener("touchmove", preventTouch);
     }
-
     return () => document.removeEventListener("touchmove", preventTouch);
   }, [selectedImage]);
 
-  // 🪟 Popup rendered via portal (unchanged)
   const Popup = ({ src }: { src: string }) => {
     if (typeof window === "undefined") return null;
-
     const handleResetZoom = (e: React.MouseEvent<HTMLDivElement>) => {
-      // Prevent clicking the image or the ✕ button from triggering reset
       const target = e.target as HTMLElement;
-      if (target.closest("button")) return; // ignore clicks on ✕
+      if (target.closest("button")) return;
       if (imgRef.current) {
         gsap.to(imgRef.current, {
           scale: 1,
@@ -157,15 +149,14 @@ export default function SampleSection() {
         });
       }
     };
-
     return createPortal(
       <div
-        onClick={handleResetZoom} // ✅ Click anywhere resets zoom
+        onClick={handleResetZoom}
         className="fixed inset-0 flex items-center justify-center bg-black/85 backdrop-blur-sm z-[100] p-[4vw]"
       >
         <button
           onClick={(e) => {
-            e.stopPropagation(); // prevent zoom reset
+            e.stopPropagation();
             setSelectedImage(null);
           }}
           className="absolute top-[2vh] right-[3vw] text-white text-[clamp(1.5rem,3vw,2.5rem)] font-light hover:scale-110 transition-transform z-[10000]"
@@ -177,12 +168,12 @@ export default function SampleSection() {
           ref={imgRef}
           src={src}
           alt="Sample"
-          width={1200} // ✅ required when not using fill (adjust as needed)
-          height={800} // ✅ keeps layout stable
+          width={1200}
+          height={800}
           className="shadow-xl object-contain cursor-grab active:cursor-grabbing max-h-[92vh] max-w-[92vw] select-none"
           draggable={false}
-          onClick={(e) => e.stopPropagation()} // ✅ still prevents reset
-          priority={false} // optional, can be true if this image loads above-the-fold
+          onClick={(e) => e.stopPropagation()}
+          priority={false}
         />
       </div>,
       document.body
@@ -192,34 +183,38 @@ export default function SampleSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative w-full min-h-screen flex flex-col items-center justify-center py-[15vh] bg-transparent overflow-visible"
+      className="relative w-full min-h-screen flex flex-col items-center justify-center py-[12vh] bg-transparent overflow-visible"
     >
-      <h2 className="text-[clamp(2.5rem,5vw,4rem)] font-light text-center mb-[6vh] text-white tracking-tight leading-[1.2]">
-        Our Samples
-      </h2>
+      {/* Title */}
+      <div className="flex flex-col items-center justify-center space-y-[clamp(2rem,6vh,4rem)]">
+        <h2 className="text-[clamp(2.2rem,4.5vw,3.8rem)] font-light text-center text-white tracking-tight leading-[1.2]">
+          Our Samples
+        </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[2vw] px-[4vw] w-full max-w-[95vw] justify-items-center">
-        {samples.map((item, i) => (
-          <div
-            key={item.id}
-            ref={(el) => {
-              if (el) cardsRef.current[i] = el;
-            }}
-            onClick={() => setSelectedImage(item.image)}
-            className="relative w-full aspect-[3/4] border border-gray-500 overflow-hidden shadow-lg bg-white/5 backdrop-blur-sm cursor-pointer transition-all duration-300"
-          >
+        {/* Grid centered and uniform */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[2rem] md:gap-[2.5rem] w-full max-w-[90vw] px-[4vw] justify-items-center place-items-center">
+          {samples.map((item, i) => (
             <div
-              className="bg absolute inset-0 bg-cover bg-center transition-transform duration-500"
-              style={{ backgroundImage: `url(${item.image})` }}
-            />
-            <div className="overlay absolute inset-0 z-[1] transition-all duration-500" />
-            <div className="absolute bottom-[4%] left-[5%] z-[2]">
-              <h3 className="title text-[clamp(1.2rem,2vw,1.75rem)] font-semibold text-white transition-transform duration-500 ease-out">
-                {item.title}
-              </h3>
+              key={item.id}
+              ref={(el) => {
+                if (el) cardsRef.current[i] = el;
+              }}
+              onClick={() => setSelectedImage(item.image)}
+              className="relative w-[25vw] h-[60vh] min-w-[250px] min-h-[350px] border border-gray-500 overflow-hidden shadow-lg bg-white/5 backdrop-blur-sm cursor-pointer transition-all duration-300"
+            >
+              <div
+                className="bg absolute inset-0 bg-cover bg-center transition-transform duration-500"
+                style={{ backgroundImage: `url(${item.image})` }}
+              />
+              <div className="overlay absolute inset-0 z-[1] transition-all duration-500" />
+              <div className="absolute bottom-[4%] left-[6%] z-[2]">
+                <h3 className="title text-[clamp(1.1rem,1.8vw,1.5rem)] font-semibold text-white transition-transform duration-500 ease-out">
+                  {item.title}
+                </h3>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {selectedImage && <Popup src={selectedImage} />}

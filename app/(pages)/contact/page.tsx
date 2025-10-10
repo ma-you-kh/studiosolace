@@ -112,7 +112,7 @@ export default function ContactPage() {
             <h2 className="text-3xl font-light mb-4">Email</h2>
             <div className="space-y-2 text-gray-400 text-lg leading-relaxed">
               <a
-                href="mailto:info@solacestudio.in,studiosolace.arch@gmail.com"
+                href={`mailto:studiosolace.arch@gmail.com,info@solacestudio.in?subject=Project%20Inquiry&body=Hi%20Studio%20Solace,%0D%0A%0D%0AI'd%20love%20to%20discuss%20a%20new%20project...`}
                 className="text-white hover:underline transition-all duration-300 block"
               >
                 info@solacestudio.in

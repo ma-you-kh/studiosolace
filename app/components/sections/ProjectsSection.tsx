@@ -98,14 +98,15 @@ export default function ProjectsSection() {
       };
 
       // Compute exact deck translation needed in pixels
-      const computeDeckFinalX = (multiplier = 1.8): number => {
-        const deckRect = deck.getBoundingClientRect();
-        const deckCenterX = deckRect.left + deckRect.width / 2;
-        const viewportCenterX = window.innerWidth / 2;
-        const targetX = computeTotalTravel() * multiplier;
-        const requiredX = Math.round(viewportCenterX - (deckCenterX + targetX));
-        return requiredX;
-      };
+      const computeDeckFinalX = (multiplier = 1.5): number => {
+  const totalTravel = computeTotalTravel();
+  const viewportWidth = window.innerWidth;
+
+  // Shift left just enough to move deck by (totalTravel × multiplier)
+  // and keep the last card nicely exiting the viewport.
+  const requiredX = -(totalTravel * multiplier - viewportWidth / 2);
+  return Math.round(requiredX);
+};
 
       /* --- Phase 1: Fan Out --- */
       const fanOutTl = gsap.timeline({
@@ -149,12 +150,8 @@ export default function ProjectsSection() {
           invalidateOnRefresh: true,
           onRefresh: () => {
             const total = computeTotalTravel();
-            console.log(
-              "[ProjectsSection] totalTravel(px):",
-              total,
-              "scroll range(px):",
-              total
-            );
+            const finalX = computeDeckFinalX();
+            console.log("totalTravel:", total, "finalX:", finalX);
           },
           onUpdate: () => {
             const viewportCenterX = window.innerWidth / 2;
@@ -257,7 +254,7 @@ export default function ProjectsSection() {
           const cardImage =
             p.gallery && p.gallery.length > 0
               ? p.gallery[0]
-              : p.image ?? "/images/placeholder.png";
+              : (p.image ?? "/images/placeholder.png");
           const desc1 = p.category ?? "";
           const desc2 = [p.location, p.year].filter(Boolean).join(" • ");
 

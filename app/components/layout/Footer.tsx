@@ -5,13 +5,13 @@ const Footer = () => {
   return (
     <footer className="relative bg-black text-gray-300 w-full pt-10 z-10">
       <div className="container mx-auto px-5 md:px-5 lg:px-5">
-        <div className="grid grid-cols-1 md:grid-cols-[40%_30%_30%] gap-12 border-b border-gray-700 pb-2">
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr] gap-12 border-b border-gray-700 pb-2">
           {/* Left Column - CTA */}
           <div>
-            <h2 className="text-3xl md:text-4xl font-light text-white mb-4">
+            <h2 className="text-4xl md:text-4xl font-light text-white mb-4">
               Designing Spaces,
             </h2>
-            <h2 className="text-3xl md:text-4xl font-light text-white mb-4">
+            <h2 className="text-4xl md:text-4xl font-light text-white mb-4">
               Creating Joy!
             </h2>
             <p className="text-sm text-gray-400 mb-6">
@@ -30,7 +30,7 @@ const Footer = () => {
           </div>
 
           {/* Middle Column - Quick Links and Follow Us */}
-          <div>
+         <div className="flex flex-col justify-center justify-self-center items-center text-center w-full">
             <h4 className="text-white font-semibold mb-4 uppercase text-sm tracking-wide">
               Quick Links
             </h4>
@@ -52,7 +52,7 @@ const Footer = () => {
             <h4 className="text-white font-semibold mt-6 mb-2 uppercase text-sm tracking-wide">
               Follow Us
             </h4>
-            <div className="flex gap-6 text-sm">
+            <div className="flex gap-6">
               <a
                 href="https://instagram.com/_studio_solace_"
                 target="_blank"
@@ -68,7 +68,7 @@ const Footer = () => {
                 Pinterest
               </a>
               <a
-                href="https://wa.me/9999770200"
+                href="https://wa.me/919999770200"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -78,8 +78,8 @@ const Footer = () => {
           </div>
 
           {/* Right Column - Contact & Map */}
-          <div>
-            <h4 className="text-white font-semibold mb-4 uppercase text-sm tracking-wide">
+          <div className="flex flex-col items-end md:justify-self-end md:pl-4">
+            <h4 className="text-white font-semibold mb-4 uppercase text-sm tracking-wide self-center md:self-center text-center">
               Office Address
             </h4>
 
