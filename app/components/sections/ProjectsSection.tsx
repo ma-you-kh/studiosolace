@@ -61,37 +61,36 @@ export default function ProjectsSection() {
       });
 
       /* 🃏 Deck setup */
-const baseCardRect = cards[0].getBoundingClientRect();
-const baseCardW = baseCardRect.width;
+      const baseCardRect = cards[0].getBoundingClientRect();
+      const baseCardW = baseCardRect.width;
 
-// Make overlap and gap relative (no fixed pixels)
-const overlap = baseCardW * 0.1; // 10% of card width
-const gap = window.innerWidth * 0.18; // 18% of viewport width
-const n = cards.length;
+      // Make overlap and gap relative (no fixed pixels)
+      const overlap = baseCardW * 0.1; // 10% of card width
+      const gap = window.innerWidth * 0.18; // 18% of viewport width
+      const n = cards.length;
 
-const baseZ = cards.length;
-gsap.set(deck, { transformPerspective: 1000 });
-gsap.set(cards, {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  xPercent: -50,
-  yPercent: -50,
-  rotateY: 0,
-  transformOrigin: "center center",
-  willChange: "transform, opacity, filter",
-});
+      const baseZ = cards.length;
+      gsap.set(deck, { transformPerspective: 1000 });
+      gsap.set(cards, {
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        xPercent: -50,
+        yPercent: -50,
+        rotateY: 0,
+        transformOrigin: "center center",
+        willChange: "transform, opacity, filter",
+      });
 
-cards.forEach((card, i) => {
-  gsap.set(card, {
-    x: (cards.length - i - 1) * overlap,
-    zIndex: baseZ - i,
-    scale: 1,
-    opacity: 1,
-    filter: "brightness(1)",
-  });
-});
-
+      cards.forEach((card, i) => {
+        gsap.set(card, {
+          x: (cards.length - i - 1) * overlap,
+          zIndex: baseZ - i,
+          scale: 1,
+          opacity: 1,
+          filter: "brightness(1)",
+        });
+      });
 
       // --- helper functions ---
       const computeTotalTravel = (): number => {
