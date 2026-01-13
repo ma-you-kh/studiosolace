@@ -24,7 +24,7 @@ export default function BackgroundSquares() {
 
     function draw() {
       ctx.clearRect(0, 0, width, height)
-      ctx.fillStyle = "#090909"
+      ctx.fillStyle = "#030303"
       ctx.fillRect(0, 0, width, height)
 
       for (let row = 0; row < rows; row++) {

@@ -11,43 +11,42 @@ export default function ContactPage() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-  // ✅ Wait until the browser fully paints the DOM
-  const timeout = setTimeout(() => {
-    const ctx = gsap.context(() => {
-      gsap.utils.toArray<HTMLElement>(".reveal").forEach((el, i) => {
-        gsap.fromTo(
-          el,
-          { opacity: 0, y: 80 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 1.2,
-            ease: "power3.out",
-            delay: i * 0.1,
-            scrollTrigger: {
-              trigger: el,
-              start: "top 85%",
-              toggleActions: "play none none reverse",
-            },
-          }
-        );
-      });
-
-      gsap.utils.toArray<HTMLElement>(".parallax").forEach((el) => {
-        gsap.to(el, {
-          yPercent: -15,
-          ease: "none",
-          scrollTrigger: { trigger: el, scrub: 1.2 },
+    // ✅ Wait until the browser fully paints the DOM
+    const timeout = setTimeout(() => {
+      const ctx = gsap.context(() => {
+        gsap.utils.toArray<HTMLElement>(".reveal").forEach((el, i) => {
+          gsap.fromTo(
+            el,
+            { opacity: 0, y: 80 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 1.2,
+              ease: "power3.out",
+              delay: i * 0.1,
+              scrollTrigger: {
+                trigger: el,
+                start: "top 85%",
+                toggleActions: "play none none reverse",
+              },
+            }
+          );
         });
-      });
-    }, containerRef);
 
-    return () => ctx.revert();
-  }, 50); // small delay to ensure DOM + hydration done
+        gsap.utils.toArray<HTMLElement>(".parallax").forEach((el) => {
+          gsap.to(el, {
+            yPercent: -15,
+            ease: "none",
+            scrollTrigger: { trigger: el, scrub: 1.2 },
+          });
+        });
+      }, containerRef);
 
-  return () => clearTimeout(timeout);
-}, []);
+      return () => ctx.revert();
+    }, 50); // small delay to ensure DOM + hydration done
 
+    return () => clearTimeout(timeout);
+  }, []);
 
   return (
     <div
@@ -101,10 +100,46 @@ export default function ContactPage() {
           {/* Contact Numbers */}
           <div>
             <h2 className="text-3xl font-light mb-4">Contact</h2>
-            <p className="text-gray-400 text-lg leading-relaxed">
-              <span className="block">+91 9999770200 </span>
-              <span className="block">+91 9667599619</span>
-            </p>
+            <div className="text-gray-400 text-lg leading-relaxed space-y-3">
+              <a
+                href="tel:+919999770200"
+                className="inline-flex items-center gap-3 text-gray-400 hover:text-white transition-colors duration-300"
+              >
+                <svg
+                  aria-hidden="true"
+                  className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.09 4.18 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.72c.12 1.05.35 2.07.68 3.03a2 2 0 0 1-.45 2.11L9.91 10.09a16 16 0 0 0 6 6l1.23-1.23a2 2 0 0 1 2.11-.45c.96.33 1.98.56 3.03.68A2 2 0 0 1 22 16.92z" />
+                </svg>
+                <span>+91 9999770200</span>
+              </a>
+
+              <br />
+              <a
+                href="tel:+919667599619"
+                className="inline-flex items-center gap-3 text-gray-400 hover:text-white transition-colors duration-300"
+              >
+                <svg
+                  aria-hidden="true"
+                  className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.09 4.18 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.72c.12 1.05.35 2.07.68 3.03a2 2 0 0 1-.45 2.11L9.91 10.09a16 16 0 0 0 6 6l1.23-1.23a2 2 0 0 1 2.11-.45c.96.33 1.98.56 3.03.68A2 2 0 0 1 22 16.92z" />
+                </svg>
+                <span>+91 9667599619</span>
+              </a>
+            </div>
           </div>
 
           {/* Email Addresses */}
@@ -112,22 +147,67 @@ export default function ContactPage() {
             <h2 className="text-3xl font-light mb-4">Email</h2>
             <div className="space-y-2 text-gray-400 text-lg leading-relaxed">
               <a
-                href={`mailto:studiosolace.arch@gmail.com,info@solacestudio.in?subject=Project%20Inquiry&body=Hi%20Studio%20Solace,%0D%0A%0D%0AI'd%20love%20to%20discuss%20a%20new%20project...`}
-                className="text-white hover:underline transition-all duration-300 block"
+                href={`mailto:info@solacestudio.in?subject=Project%20Inquiry&body=Hi%20Studio%20Solace,%0D%0A%0D%0AI'd%20love%20to%20discuss%20a%20new%20project...`}
+                className="inline-flex items-center gap-3 text-white hover:underline transition-all duration-300"
               >
-                info@solacestudio.in
+                <svg
+                  aria-hidden="true"
+                  className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="5" width="18" height="14" rx="2" ry="2" />
+                  <path d="M3 7l9 6 9-6" />
+                </svg>
+                <span>info@solacestudio.in</span>
               </a>
+
+              <br />
+
               <a
                 href="mailto:akashthakran77@gmail.com"
-                className="text-white hover:underline transition-all duration-300 block"
+                className="inline-flex items-center gap-3 text-white hover:underline transition-all duration-300"
               >
-                akashthakran77@gmail.com
+                <svg
+                  aria-hidden="true"
+                  className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="5" width="18" height="14" rx="2" ry="2" />
+                  <path d="M3 7l9 6 9-6" />
+                </svg>
+                <span>akashthakran77@gmail.com</span>
               </a>
+
+              <br />
+
               <a
                 href="mailto:sakshichauhan.arch@gmail.com"
-                className="text-white hover:underline transition-all duration-300 block"
+                className="inline-flex items-center gap-3 text-white hover:underline transition-all duration-300"
               >
-                sakshichauhan.arch@gmail.com
+                <svg
+                  aria-hidden="true"
+                  className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="5" width="18" height="14" rx="2" ry="2" />
+                  <path d="M3 7l9 6 9-6" />
+                </svg>
+                <span>sakshichauhan.arch@gmail.com</span>
               </a>
             </div>
           </div>

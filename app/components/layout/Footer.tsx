@@ -41,12 +41,15 @@ const Footer = () => {
               <li>
                 <Link href="/projects">Our Projects</Link>
               </li>
-              <li className="text-gray-400 cursor-default select-none">
+              <li>
+                <Link href="/contact">Contact Us</Link>
+              </li>
+              {/* <li className="text-gray-400 cursor-default select-none">
                 <span>Our Expertise</span>
               </li>
               <li className="text-gray-400 cursor-default select-none">
                 <span>Samples</span>
-              </li>
+              </li> */}
             </ul>
 
             <h4 className="text-white font-semibold mt-6 mb-2 uppercase text-sm tracking-wide">
