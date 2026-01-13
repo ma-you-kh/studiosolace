@@ -16,10 +16,10 @@ const expertise = [
   },
   {
     id: 2,
-    title: "Interior Design",
+    title: "3D Visualization",
     description:
-      "Interiors are where architecture meets everyday life—spaces that balance beauty with purpose. We design environments that are visually captivating yet effortlessly functional, from spatial flow to curated materials, textures, and lighting. Every detail is crafted to tell a story, evoke emotion, and leave a lasting impression through thoughtful, human-centered design.",
-    image: "/images/expertise/intd.jpg",
+      "At Solace Studio, 3D visualization transforms ideas into immersive, lifelike experiences. It allows spaces to be explored before execution, ensuring clarity, accuracy, and emotional connection. Through refined visuals, we communicate design intent, materiality, and atmosphere—supporting confident decisions and seamless collaboration.",
+    image: "/images/expertise/3Dvz.jpg",
   },
   {
     id: 3,
@@ -30,10 +30,10 @@ const expertise = [
   },
   {
     id: 4,
-    title: "Interior Styling",
+    title: "Interior Design",
     description:
-      "Interior styling is the defining touch that transforms a well-designed space into a living, breathing experience. It’s where personality, comfort, and beauty converge—through carefully chosen décor, textures, and artful details. We craft cohesive, expressive environments that feel authentic, balanced, and deeply connected to the people who call them home.",
-    image: "/images/expertise/ints.jpg",
+      "Interiors are where architecture meets everyday life—spaces that balance beauty with purpose. We design environments that are visually captivating yet effortlessly functional, from spatial flow to curated materials, textures, and lighting. Every detail is crafted to tell a story, evoke emotion, and leave a lasting impression through thoughtful, human-centered design.",
+    image: "/images/expertise/intd.jpg",
   },
 ];
 
