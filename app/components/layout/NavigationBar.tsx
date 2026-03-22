@@ -15,6 +15,7 @@ const Navbar: React.FC = () => {
   const rightTextRef = useRef<HTMLDivElement>(null);
   const [socialDropdownOpen, setSocialDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [activeItem, setActiveItem] = useState<string | null>(null);
 
   const bgColor = scrolled
     ? "bg-black/90 backdrop-blur-sm"
@@ -47,7 +48,7 @@ const Navbar: React.FC = () => {
 
   useEffect(() => {
     if (!menuRef.current) return;
-
+    const isMobile = window.innerWidth < 1024;
     const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
     if (menuOpen) {
@@ -79,20 +80,20 @@ const Navbar: React.FC = () => {
         const linkEls = Array.from(linksRef.current.children);
         tl.to(linkEls, {
           opacity: 0,
-          x: 50,
-          duration: 0.5,
-          stagger: { each: 0.2, from: "end" },
+          x: isMobile ? 20 : 50,
+          duration: isMobile ? 0.25 : 0.5,
+          stagger: isMobile ? 0 : { each: 0.2, from: "end" },
         });
       }
 
       tl.to([rightTextRef.current, dividerRef.current], {
         opacity: 0,
-        duration: 0.3,
+        duration: isMobile ? 0.1 : 0.3,
       }).to(menuRef.current, {
         y: "-100%",
         opacity: 0,
         duration: 0.5,
-        ease: "power3.in",
+        ease: isMobile ? "power2.in" : "power3.in",
       });
     }
   }, [menuOpen]);
@@ -100,7 +101,7 @@ const Navbar: React.FC = () => {
   return (
     <nav
       id="main-navbar"
-      className={`fixed top-0 left-0 w-full z-20 transition-[background-color,backdrop-filter] duration-500 ease-in-out ${bgColor}`}
+      className={`fixed top-0 left-0 w-full px-4 sm:px-6 z-20 transition-[background-color,backdrop-filter] duration-500 ease-in-out ${bgColor}`}
     >
       <div
         className={`w-full px-4 md:px-8 flex items-center justify-between relative
@@ -158,7 +159,7 @@ const Navbar: React.FC = () => {
             >
               {/* Title */}
               <p className="text-xs uppercase tracking-widest text-white/50 mb-3 px-2">
-                Connect
+                Let's Connect
               </p>
               <SocialIcons variant="grid" />
             </div>
@@ -172,11 +173,11 @@ const Navbar: React.FC = () => {
         className="fixed w-full h-screen inset-0 z-20 bg-black/97 backdrop-blur-md opacity-0"
         style={{ transform: "translateY(-100%)" }}
       >
-        <div className="container mx-auto px-6 md:px-10 lg:px-16 flex h-full justify-between items-center">
+        <div className="w-full px-6 md:px-10 lg:px-16 h-full flex flex-col lg:flex-row justify-center lg:justify-between items-center">
           {/* Left Column: Navigation */}
           <div
             ref={linksRef}
-            className="flex-1 flex flex-col items-end justify-center gap-10 text-white text-4xl pr-8 md:pr-12"
+            className="hidden lg:flex flex-1 flex-col items-end justify-center gap-10 text-white text-4xl pr-8 md:pr-12"
           >
             <Link
               href="/home"
@@ -187,6 +188,7 @@ const Navbar: React.FC = () => {
             >
               Home
             </Link>
+
             <Link
               href="/about"
               onClick={() => setMenuOpen(false)}
@@ -196,6 +198,7 @@ const Navbar: React.FC = () => {
             >
               About Us
             </Link>
+
             <Link
               href="/projects"
               onClick={() => setMenuOpen(false)}
@@ -205,6 +208,7 @@ const Navbar: React.FC = () => {
             >
               Our Projects
             </Link>
+
             <Link
               href="/contact"
               onClick={() => setMenuOpen(false)}
@@ -215,17 +219,91 @@ const Navbar: React.FC = () => {
               Contact Us
             </Link>
           </div>
+          <div className="lg:hidden w-full flex flex-col items-center justify-center gap-4 text-white">
+            {[
+              {
+                name: "Home",
+                key: "home",
+                desc: "Discover our vision and values that shape every project we create.",
+                href: "/home",
+              },
+              {
+                name: "About Us",
+                key: "about",
+                desc: "Learn about our journey, philosophy, and the people behind Studio Solace.",
+                href: "/about",
+              },
+              {
+                name: "Our Projects",
+                key: "portfolio",
+                desc: "Browse our curated portfolio showcasing creativity across diverse projects.",
+                href: "/projects",
+              },
+              {
+                name: "Contact Us",
+                key: "contact",
+                desc: "Get in touch with us — we’d love to collaborate and bring ideas to life.",
+                href: "/contact",
+              },
+            ].map((item) => {
+              const isActive = activeItem === item.key;
 
+              return (
+                <div
+                  key={item.key}
+                  className={`w-full max-w-md mx-auto px-2 rounded-xl border transition-all duration-300
+        ${isActive ? "bg-white/5 border-white/20" : "border-white/10"}
+        `}
+                >
+                  {/* HEADER */}
+                  <button
+                    onClick={() => setActiveItem(isActive ? null : item.key)}
+                    className="w-full flex items-center justify-between px-4 py-5 text-xl sm:text-2xl"
+                  >
+                    <span>{item.name}</span>
+
+                    <span
+                      className={`text-white/50 transition-transform duration-300 ${
+                        isActive ? "rotate-180" : ""
+                      }`}
+                    >
+                      ⌄
+                    </span>
+                  </button>
+
+                  {/* EXPANDABLE CONTENT */}
+                  <div
+                    className={`overflow-hidden transition-all duration-500 px-4
+          ${isActive ? "max-h-40 pb-4 opacity-100" : "max-h-0 opacity-0"}
+          `}
+                  >
+                    <p className="text-sm text-white/70 leading-relaxed">
+                      {item.desc}
+                    </p>
+
+                    {/* CTA */}
+                    <a
+                      href={item.href}
+                      onClick={() => setMenuOpen(false)}
+                      className="inline-block mt-3 text-sm text-white underline underline-offset-4"
+                    >
+                      Visit Page →
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
           {/* Divider */}
           <div
             ref={dividerRef}
-            className="h-[60vh] w-px bg-white/70 origin-top scale-y-0"
+            className="hidden lg:block h-[60vh] w-px bg-white/70 origin-top scale-y-0"
           ></div>
 
           {/* Right Column: Dynamic Descriptions */}
           <div
             ref={rightTextRef}
-            className="flex-1 flex items-center justify-start pl-8 md:pl-12 relative opacity-0"
+            className="hidden lg:flex flex-1 items-center justify-start pl-8 md:pl-12 relative opacity-0"
           >
             <p
               className={`text-white text-lg max-w-md leading-relaxed absolute transition-opacity duration-700 ease-in-out ${
