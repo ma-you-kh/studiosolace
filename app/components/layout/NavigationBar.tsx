@@ -159,7 +159,7 @@ const Navbar: React.FC = () => {
             >
               {/* Title */}
               <p className="text-xs uppercase tracking-widest text-white/50 mb-3 px-2">
-                Let's Connect
+                Let us Connect
               </p>
               <SocialIcons variant="grid" />
             </div>
