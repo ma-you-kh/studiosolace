@@ -15,6 +15,7 @@ const Navbar: React.FC = () => {
   const rightTextRef = useRef<HTMLDivElement>(null);
   const [socialDropdownOpen, setSocialDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const [activeItem, setActiveItem] = useState<string | null>(null);
 
   const bgColor = scrolled
@@ -29,9 +30,13 @@ const Navbar: React.FC = () => {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+
       if (
         dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
+        !dropdownRef.current.contains(target) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(target)
       ) {
         setSocialDropdownOpen(false);
       }
@@ -130,15 +135,24 @@ const Navbar: React.FC = () => {
         {/* Mobile: Dropdown Trigger */}
         <div className="ml-auto md:hidden relative z-50">
           <button
-            onClick={() => setSocialDropdownOpen(!socialDropdownOpen)}
+            ref={buttonRef}
+            onClick={() => {
+              setSocialDropdownOpen((prev) => !prev);
+            }}
             className="btn btn-ghost btn-circle p-2 transition-all duration-300 hover:bg-white/10 active:scale-90"
             aria-label="Social links"
           >
             {/* Animated 3-dot icon */}
-            <div className="flex flex-col items-center gap-[3px]">
-              <span className="w-1 h-1 bg-white rounded-full transition-all duration-300"></span>
-              <span className="w-1 h-1 bg-white rounded-full transition-all duration-300"></span>
-              <span className="w-1 h-1 bg-white rounded-full transition-all duration-300"></span>
+            <div className="relative w-5 h-5 flex items-center justify-center">
+              <span
+                className={`absolute w-4 h-[2px] bg-white transition-all duration-300 
+    ${socialDropdownOpen ? "rotate-45" : "translate-y-[-4px]"}`}
+              ></span>
+
+              <span
+                className={`absolute w-4 h-[2px] bg-white transition-all duration-300 
+    ${socialDropdownOpen ? "-rotate-45" : "translate-y-[4px]"}`}
+              ></span>
             </div>
           </button>
 
@@ -155,7 +169,7 @@ const Navbar: React.FC = () => {
           >
             <div
               ref={dropdownRef}
-              className="bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-4 min-w-[180px]"
+              className="bg-black/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-4 min-w-[180px]"
             >
               {/* Title */}
               <p className="text-xs uppercase tracking-widest text-white/50 mb-3 px-2">

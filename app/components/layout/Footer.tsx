@@ -4,11 +4,11 @@ import Link from "next/link";
 const Footer = () => {
   return (
     <footer className="relative bg-black text-gray-300 w-full pt-10 z-10">
-      <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16 max-w-[1400px] mx-auto">
+      <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16">
         {/* MAIN GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 border-b border-gray-700 pb-6">
           {/* CTA + MAP */}
-          <div className="flex flex-col items-center text-center lg:items-start lg:text-left gap-6 w-full">
+          <div className="flex flex-col items-center text-center lg:items-start lg:text-left gap-6 w-full lg:mt-10">
             <div className="w-full max-w-[340px] sm:max-w-[420px] mx-auto lg:mx-0">
               {/* CTA */}
               <div className="flex flex-col items-center lg:items-start w-full">
