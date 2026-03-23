@@ -86,12 +86,12 @@ export default function HeroSection({ startAnimation }: Props) {
   return (
     <section
       ref={sectionRef}
-      className="relative w-full overflow-visible text-white select-none"
+      className="relative w-full overflow-visible text-white select-none px-5 sm:px-8 lg:px-0"
     >
       {/* PANEL 1 — Hero */}
-      <div className="panel-1 relative flex items-start justify-center h-screen">
+      <div className="panel-1 relative flex items-start justify-center h-[100svh] lg:h-screen">
         <div
-          className="hero-headline text-center font-light leading-[1.1]"
+          className="hero-headline text-center font-light leading-[1.1] lg:translate-y-[calc(55vh-70%)]"
           style={{ transform: "translateY(calc(55vh - 70%))" }}
         >
           <h1 className="hero-line opacity-0 translate-y-10 text-5xl md:text-7xl lg:text-8xl tracking-tight">
@@ -136,7 +136,7 @@ export default function HeroSection({ startAnimation }: Props) {
       </div>
 
       {/* PANEL 2 — Background image with black fade */}
-      <div className="panel-2 relative flex flex-col items-center justify-center h-screen text-center overflow-hidden">
+      <div className="panel-2 relative flex flex-col items-center justify-center h-[100svh] lg:h-screen text-center overflow-hidden">
         {/* Background image */}
         <Image
           ref={imageRef}
@@ -152,7 +152,7 @@ export default function HeroSection({ startAnimation }: Props) {
         <div className="absolute bottom-0 left-0 w-full h-[40%] bg-gradient-to-b from-transparent to-black z-[2] pointer-events-none" />
 
         {/* Content */}
-        <div className="relative z-[3] max-w-4xl px-4">
+        <div className="relative z-[3] max-w-4xl px-4 sm:px-0">
           <h2 className="text-5xl md:text-6xl font-light mb-6">
             Welcome to Solace Studio
           </h2>
