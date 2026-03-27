@@ -30,7 +30,8 @@ const samples = [
 
 export default function SampleSection() {
   const sectionRef = useRef<HTMLDivElement | null>(null);
-  const cardsRef = useRef<HTMLDivElement[]>([]);
+  // const cardsRef = useRef<HTMLDivElement[]>([]);
+  const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
   const [zoom, setZoom] = useState(1);
@@ -38,71 +39,100 @@ export default function SampleSection() {
 
   // --- All existing GSAP logic unchanged ---
   useEffect(() => {
-  // ✅ Disable GSAP scroll lock on mobile
-  if (window.innerWidth < 1024) return;
+    // ✅ Disable GSAP scroll lock on mobile
+    if (window.innerWidth < 1024) return;
 
-  const section = sectionRef.current;
-  if (!section) return;
+    const section = sectionRef.current;
+    if (!section) return;
 
-  const ctx = gsap.context(() => {
-    gsap.timeline({
-      scrollTrigger: {
-        trigger: section,
-        start: "top top",
-        end: "+=120%",
-        pin: true,
-        scrub: 0.4,
-        anticipatePin: 1,
-      },
-    });
-  }, section);
+    const ctx = gsap.context(() => {
+      gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: "top top",
+          end: "+=120%",
+          pin: true,
+          scrub: 0.4,
+          anticipatePin: 1,
+        },
+      });
+    }, section);
 
-  return () => ctx.revert();
-}, []);
+    return () => ctx.revert();
+  }, []);
 
   useEffect(() => {
-    cardsRef.current.forEach((card) => {
-      if (!card) return;
-      const overlay = card.querySelector(".overlay") as HTMLDivElement;
-      const title = card.querySelector(".title") as HTMLHeadingElement;
-      const bg = card.querySelector(".bg") as HTMLDivElement;
+    if (window.innerWidth < 1024) return;
 
-      gsap.set(overlay, { backgroundColor: "rgba(0,0,0,0.25)" });
+    const cards = cardsRef.current.filter(Boolean);
 
-      card.addEventListener("mouseenter", () => {
-        gsap.to(card, {
-          scale: 1.04,
-          boxShadow: "0 0 1.5vw rgba(255,255,255,0.15)",
-          filter: "brightness(1.08)",
-          duration: 0.25,
-          ease: "power3.out",
-        });
-        gsap.to(bg, { scale: 1.08, duration: 0.3, ease: "power3.out" });
-        gsap.to(overlay, {
-          backgroundColor: "rgba(0,0,0,0.55)",
-          duration: 0.25,
-          ease: "power3.out",
-        });
-        gsap.to(title, { y: "-0.6vw", duration: 0.25, ease: "power3.out" });
-      });
-
-      card.addEventListener("mouseleave", () => {
-        gsap.to(card, {
-          scale: 1,
-          boxShadow: "0 0 0 rgba(255,255,255,0)",
-          filter: "brightness(1)",
-          duration: 0.3,
-          ease: "power3.inOut",
-        });
-        gsap.to(bg, { scale: 1, duration: 0.3, ease: "power3.inOut" });
-        gsap.to(overlay, {
-          backgroundColor: "rgba(0,0,0,0.25)",
-          duration: 0.3,
-          ease: "power3.inOut",
-        });
-        gsap.to(title, { y: 0, duration: 0.3, ease: "power3.inOut" });
+    cards.forEach((card, i) => {
+      gsap.to(card, {
+        y: "+=8", // small movement only
+        duration: 2.5 + i * 0.2,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
       });
     });
+  }, []);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      cardsRef.current.forEach((card) => {
+        if (!card) return;
+
+        const overlay = card.querySelector(".overlay") as HTMLDivElement;
+        const title = card.querySelector(".title") as HTMLHeadingElement;
+        const bg = card.querySelector(".bg") as HTMLDivElement;
+
+        if (!overlay || !title || !bg) return;
+
+        gsap.set(overlay, { backgroundColor: "rgba(0,0,0,0.25)" });
+
+        const enter = () => {
+          gsap.to(card, {
+            scale: 1.06,
+            y: -12,
+            boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
+            duration: 0.35,
+            ease: "power3.out",
+            rotateX: 2,
+            rotateY: -2,
+          });
+
+          gsap.to(bg, { scale: 1.12, duration: 0.4 });
+          gsap.to(overlay, { backgroundColor: "rgba(0,0,0,0.65)" });
+          gsap.to(title, { y: "-1vw", letterSpacing: "0.05em" });
+        };
+
+        const leave = () => {
+          gsap.to(card, {
+            scale: 1,
+            y: 0,
+            boxShadow: "0 0 0 rgba(0,0,0,0)",
+            duration: 0.4,
+            ease: "power3.inOut",
+            rotateX: 0,
+            rotateY: 0,
+          });
+
+          gsap.to(bg, { scale: 1 });
+          gsap.to(overlay, { backgroundColor: "rgba(0,0,0,0.25)" });
+          gsap.to(title, { y: 0, letterSpacing: "0em" });
+        };
+
+        card.addEventListener("mouseenter", enter);
+        card.addEventListener("mouseleave", leave);
+
+        return () => {
+          card.removeEventListener("mouseenter", enter);
+          card.removeEventListener("mouseleave", leave);
+        };
+      });
+    });
+
+    return () => ctx.revert();
   }, []);
 
   useEffect(() => {
@@ -272,7 +302,11 @@ export default function SampleSection() {
       className="relative w-full min-h-fit sm:min-h-[80vh] lg:min-h-screen flex flex-col items-center justify-center py-[10vh] sm:py-[12vh] px-5 sm:px-8 bg-transparent overflow-visible"
     >
       {/* Title */}
-      <div className="flex flex-col items-stretch justify-center space-y-[clamp(2rem,6vh,4rem)] w-full">
+      <div
+        className="flex flex-col items-stretch justify-center 
+space-y-[clamp(3rem,8vh,8rem)] 
+w-full"
+      >
         <h2 className="text-[clamp(3.0rem,4.5vw,3.8rem)] font-light text-center text-white tracking-tight leading-[1.2]">
           Our Samples
         </h2>
@@ -280,30 +314,36 @@ export default function SampleSection() {
         {/* Grid centered and uniform */}
         {/* MOBILE CARD VIEW */}
         <div className="flex flex-col gap-5 sm:gap-6 w-full lg:hidden">
-  {samples.map((item) => (
-    <div
-      key={item.id}
-      onClick={() => setSelectedImage(item.image)}
-      className="w-full rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm px-1 py-1 transition-all duration-300 active:scale-[0.98]"
-    >
-      <div className="w-full aspect-[3/1] relative">
-        <Image
-          src={item.image}
-          alt={item.title}
-          fill
-          className="object-cover w-full h-full"
-        />
-      </div>
+          {samples.map((item) => (
+            <div
+              key={item.id}
+              onClick={() => setSelectedImage(item.image)}
+              className="w-full rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm px-1 py-1 transition-all duration-300 active:scale-[0.98]"
+            >
+              <div className="w-full aspect-[3/1] relative">
+                <Image
+                  src={item.image}
+                  alt={item.title}
+                  fill
+                  className="object-cover w-full h-full"
+                />
+              </div>
 
-      <div className="px-4 py-2 flex items-center justify-between">
-        <span className="text-white text-lg">{item.title}</span>
-        <span className="text-white/50 text-xl">→</span>
-      </div>
-    </div>
-  ))}
-</div>
+              <div className="px-4 py-2 flex items-center justify-between">
+                <span className="text-white text-lg">{item.title}</span>
+                <span className="text-white/50 text-xl">→</span>
+              </div>
+            </div>
+          ))}
+        </div>
         {/* DESKTOP GRID */}
-        <div className="hidden lg:grid grid-cols-3 gap-[2rem] md:gap-[2.5rem] w-full max-w-[90vw] px-[4vw] justify-items-center place-items-center">
+        <div
+          className="hidden lg:grid grid-cols-3 
+gap-[clamp(2rem,4vw,5rem)] 
+w-full max-w-[90vw] 
+mx-auto 
+justify-items-center items-center"
+        >
           {samples.map((item, i) => (
             <div
               key={item.id}
@@ -311,7 +351,15 @@ export default function SampleSection() {
                 if (el) cardsRef.current[i] = el;
               }}
               onClick={() => setSelectedImage(item.image)}
-              className="relative w-[25vw] h-[60vh] min-w-[250px] min-h-[350px] border border-gray-500 overflow-hidden shadow-lg bg-white/5 backdrop-blur-sm cursor-pointer transition-all duration-300"
+              className="relative w-[clamp(280px,22vw,420px)] 
+h-[clamp(380px,55vh,600px)]
+  rounded-2xl
+  border border-white/10
+  overflow-hidden
+  bg-white/5 backdrop-blur-md
+  shadow-[0_10px_40px_rgba(0,0,0,0.3)]
+  cursor-pointer
+  transition-all duration-300"
             >
               <div
                 className="bg absolute inset-0 bg-cover bg-center transition-transform duration-500"

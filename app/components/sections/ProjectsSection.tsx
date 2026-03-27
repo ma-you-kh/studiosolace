@@ -12,296 +12,372 @@ gsap.registerPlugin(ScrollTrigger);
 export default function ProjectsSection() {
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const deckRef = useRef<HTMLDivElement | null>(null);
-  const cardRefs = useRef<HTMLDivElement[]>([]);
-  const titleRef = useRef<HTMLHeadingElement | null>(null);
+  const mobileDeckRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
 
   function isProject(p: Project | undefined): p is Project {
     return Boolean(p);
   }
 
+  // Select visible projects (3 + "more")
   const visibleProjects = (() => {
-    const firstThree = projects.slice(0, 3);
+    const firstThree = projects.slice(1, 4);
     const more = projects.find((x) => x.slug === "more-projects");
     return [...firstThree, more].filter(isProject);
   })();
 
+  // =========================
+  // 🖥 DESKTOP CAROUSEL
+  // =========================
   useEffect(() => {
+    if (window.innerWidth < 1024) return;
+
     const section = sectionRef.current;
     const deck = deckRef.current;
-    const title = titleRef.current;
-    const cards = cardRefs.current.filter(Boolean) as HTMLDivElement[];
 
-    if (!section || !deck || !title || cards.length === 0) return;
+    if (!section || !deck) return;
 
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const cards = Array.from(
+      deck.querySelectorAll<HTMLDivElement>(".project-card"),
+    );
+
+    if (cards.length === 0) return;
 
     const ctx = gsap.context(() => {
-      /* 🪄 Title fade-in */
-      gsap.from(title, {
-        opacity: 0,
-        y: 80,
-        duration: 1.4,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: section,
-          start: "top 85%",
-        },
+      const radius = window.innerWidth * 0.3;
+      const total = cards.length;
+      const segment = 360 / total;
+
+      // =========================
+      // 🎯 SCENE SETUP
+      // =========================
+
+      // Move camera backward (so cards are not "in your face")
+      // Enable true 3D transforms
+      gsap.set(deck, {
+        z: -window.innerWidth * 0.25,
+        transformPerspective: 2500,
+        transformStyle: "preserve-3d",
+        transformOrigin: "50% 50%",
       });
 
-      gsap.to(title, {
-        yPercent: -20,
-        ease: "none",
-        scrollTrigger: {
-          trigger: section,
-          start: "top bottom",
-          end: "bottom top",
-          scrub: 1.2,
-        },
-      });
+      // =========================
+      // 🎯 INITIAL CARD PLACEMENT
+      // =========================
 
-      /* 🃏 Deck setup */
-      const baseCardRect = cards[0].getBoundingClientRect();
-      const baseCardW = baseCardRect.width;
+      // Arrange cards in a circular (carousel) layout
+      // This is purely GEOMETRY (no blur / opacity here)
+      for (let i = 0; i < cards.length; i++) {
+        const card = cards[i];
 
-      // Make overlap and gap relative (no fixed pixels)
-      const overlap = baseCardW * 0.1; // 10% of card width
-      const gap = window.innerWidth * 0.18; // 18% of viewport width
-      const n = cards.length;
+        // Distribute evenly in circle, offset so a FACE (not edge) is centered
+        const angle = (i / total) * Math.PI * 2 - Math.PI / 2 + Math.PI / total;
 
-      const baseZ = cards.length;
-      gsap.set(deck, { transformPerspective: 1000 });
-      gsap.set(cards, {
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        xPercent: -50,
-        yPercent: -50,
-        rotateY: 0,
-        transformOrigin: "center center",
-        willChange: "transform, opacity, filter",
-      });
+        const z = Math.cos(angle) * radius;
 
-      cards.forEach((card, i) => {
         gsap.set(card, {
-          x: (cards.length - i - 1) * overlap,
-          zIndex: baseZ - i,
-          scale: 1,
-          opacity: 1,
-          filter: "brightness(1)",
+          x: Math.sin(angle) * radius,
+          z,
+          rotationY: (angle * 180) / Math.PI,
+          transformOrigin: "center center",
         });
+      }
+      // 🔥 Ensure depth is correct on first paint (no cold-load flat cards)
+      requestAnimationFrame(() => {
+        updateDepth();
       });
 
-      // --- helper functions ---
-      const computeTotalTravel = (): number => {
-        const currCardW = cards[0].getBoundingClientRect().width;
-        return Math.round((n - 1) * (currCardW + gap));
-      };
+      // =========================
+      // 🎯 DEPTH SYSTEM (CRITICAL)
+      // =========================
 
-      // Compute exact deck translation needed in pixels
-      // Compute exact deck translation needed in pixels
-      const computeDeckFinalX = (multiplier = 1.7): number => {
-        const totalTravel = computeTotalTravel(); // already (n-1)*(cardW + gap)
-        const viewportCenterX = window.innerWidth / 2;
+      // This function controls:
+      // - blur
+      // - opacity
+      // - scale
+      // based on CURRENT rotation (not static z)
+      //
+      // IMPORTANT:
+      // This is the ONLY source of truth for depth
+      // Must be used consistently (no mixing with z-based blur)
+      const updateDepth = () => {
+        const deckRotation = gsap.getProperty(deck, "rotationY") as number;
 
-        // Get the last card (right-most in the fanned layout)
-        const lastCard = cards[n - 1];
-        if (!lastCard)
-          return Math.round(-(totalTravel * multiplier - viewportCenterX));
+        for (let i = 0; i < cards.length; i++) {
+          const card = cards[i];
 
-        const lastRect = lastCard.getBoundingClientRect();
-        const lastCenterX = lastRect.left + lastRect.width / 2;
+          // Base angle of card in degrees (matches initial placement)
+          const baseAngle = (i / total) * 360 - 90 + 360 / total / 2;
 
-        // Base shift required to bring the last card's center to the viewport center
-        // (positive means move deck right; negative means move deck left)
-        const baseShift = viewportCenterX - lastCenterX;
+          // Current angle after rotation
+          const currentAngle = baseAngle + deckRotation;
 
-        // Extra drift computed from multiplier: (multiplier - 1) of the totalTravel
-        // We subtract because baseShift brings last card to center; multiplier > 1 should push it further left.
-        const extra = -(multiplier - 1) * totalTravel;
+          // Normalize to 0–360
+          const normalized = ((currentAngle % 360) + 360) % 360;
 
-        const requiredX = baseShift + extra;
+          // Depth using cosine (front = 1, back = -1)
+          const depth = Math.cos((normalized * Math.PI) / 180);
 
-        return Math.round(requiredX);
-      };
+          // Visual mapping
+          const blur = Math.max(0, (1 - depth) * 2.5);
+          const opacity = depth < 0 ? 0.5 : 1;
+          const scale = 0.9 + depth * 0.15;
 
-      /* --- Phase 1: Fan Out --- */
-      const fanOutTl = gsap.timeline({
-        scrollTrigger: {
-          trigger: section,
-          start: "top bottom",
-          end: "center center",
-          scrub: 1.5,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-        },
-      });
-
-      cards.forEach((card, i) => {
-        const targetX = i * (baseCardW + gap);
-        const scale = 1 - i * 0.05;
-        const brightness = 1 - i * 0.1;
-
-        fanOutTl.to(
-          card,
-          {
-            x: targetX,
+          gsap.set(card, {
+            filter: `blur(${blur}px)`,
+            // opacity,
             scale,
-            filter: `brightness(${brightness})`,
-            ease: "power2.out",
-            duration: 1.2,
-          },
-          0
-        );
-      });
+          });
+        }
+      };
 
-      /* --- Phase 2: Horizontal Scroll --- */
-      const horizontalTl = gsap.timeline({
+      // =========================
+      // 🎯 SCROLL + TIMELINE
+      // =========================
+
+      const tl = gsap.timeline({
         scrollTrigger: {
           trigger: section,
           start: "top top",
-          end: () => `+=${Math.abs(computeDeckFinalX())}`,
-          scrub: 1,
+          end: "+=450%", // Controls "gear ratio" (scroll → rotation)
+          scrub: 2.2, // Smooth interpolation (NOT speed)
           pin: true,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-          onRefresh: () => {
-            const total = computeTotalTravel();
-            const finalX = computeDeckFinalX();
-            console.log("totalTravel:", total, "finalX:", finalX);
-          },
-          onUpdate: () => {
-            const viewportCenterX = window.innerWidth / 2;
-            const info = cards.map((cardEl, idx) => {
-              const r = cardEl.getBoundingClientRect();
-              const centerX = r.left + r.width / 2;
-              const dist = Math.abs(centerX - viewportCenterX);
-              return { idx, dist };
-            });
-
-            info.sort((a, b) => a.dist - b.dist);
-            const ZBASE = 2000;
-            info.forEach((item, sortIndex) => {
-              cards[item.idx].style.zIndex = String(ZBASE - sortIndex * 10);
-            });
-
-            cards.forEach((cardEl, index) => {
-              const r = cardEl.getBoundingClientRect();
-              const centerX = r.left + r.width / 2;
-              const distFromCenter = Math.abs(centerX - viewportCenterX);
-              const norm = gsap.utils.clamp(
-                0,
-                1,
-                distFromCenter / (window.innerWidth * 0.6)
-              );
-
-              const scale = 1.15 - norm * 0.45;
-              const zDepth = (1 - norm) * 800 - 400;
-              const relativeDepth = info.findIndex((i) => i.idx === index);
-              const DEPTH_DIM = 0.16;
-              const NORM_DIM = 0.4;
-
-              let finalBrightness =
-                1 - relativeDepth * DEPTH_DIM - norm * NORM_DIM;
-              finalBrightness = Math.max(0.28, Math.min(1, finalBrightness));
-
-              const shadowIntensity = 0.6 - norm * 0.5;
-              const boxShadow = `0 10px ${
-                30 * Math.max(0.08, shadowIntensity)
-              }px rgba(0,0,0,${0.35 + 0.25 * norm})`;
-
-              gsap.to(cardEl, {
-                scale,
-                z: zDepth,
-                filter: `brightness(${finalBrightness})`,
-                boxShadow,
-                duration: 0.12,
-                overwrite: true,
-                ease: "power4.out",
-              });
-            });
-          },
         },
       });
 
-      // 🧭 Translate deck left exactly by measured distance
-      horizontalTl.to(deck, {
-        x: () => computeDeckFinalX(),
-        ease: "none",
-      });
+      // =========================
+      // 🎬 PHASE 1: TITLE OUT + CARDS IN
+      // =========================
 
-      // Title exits
-      horizontalTl.to(
-        title,
+      // 🔥 PERFECTLY SYNCHRONIZED REVEAL
+
+      tl.to(
+        "h2",
         {
-          x: () => -window.innerWidth * 0.5,
           opacity: 0,
-          ease: "power3.inOut",
+          y: -60,
+          duration: 0.6,
+          ease: "power2.out",
         },
-        ">-0.4"
+        0,
+      );
+
+      tl.fromTo(
+        cards,
+        {
+          opacity: 0,
+          scale: 0.92,
+        },
+        {
+          opacity: 1,
+          scale: 1,
+          stagger: 0.08,
+          duration: 0.6,
+          ease: "power2.out",
+          onUpdate: updateDepth,
+        },
+        0,
+      );
+
+      // =========================
+      // 🎬 PHASE 2: ROTATION
+      // =========================
+
+      // Rotate only (total - 1) segments
+      // So we go from first card → last card (no loop back)
+      //
+      // IMPORTANT:
+      // onStart ensures no visual jump between reveal and spin
+      // onUpdate keeps blur/scale/opacity synced with rotation
+      tl.to(
+        deck,
+        {
+          rotationY: `-=${segment * (total - 1)}`,
+          ease: "none",
+          onStart: () => {
+            updateDepth();
+          },
+          onUpdate: updateDepth,
+        },
+        0.45,
       );
     }, section);
 
-    const handleResize = () => ScrollTrigger.refresh();
-    window.addEventListener("resize", handleResize);
+    return () => ctx.revert();
+  }, []);
+
+  // =========================
+  // 📱 MOBILE (IOS PICKER STYLE)
+  // =========================
+  useEffect(() => {
+    if (window.innerWidth >= 1024) return;
+
+    const container = mobileDeckRef.current;
+    if (!container) return;
+
+    const cards = Array.from(
+      container.querySelectorAll<HTMLDivElement>(".project-card"),
+    );
+
+    gsap.set(cards, { willChange: "transform, filter" });
+
+    if (cards.length === 0) return;
+
+    let timeout: NodeJS.Timeout;
+
+    // Dynamically scale + fade based on distance from center
+    const updateVisuals = () => {
+      const center = window.innerHeight / 2;
+
+      for (let i = 0; i < cards.length; i++) {
+        const card = cards[i];
+
+        const rect = card.getBoundingClientRect();
+        const cardCenter = rect.top + rect.height / 2;
+
+        const dist = Math.abs(cardCenter - center);
+        const norm = Math.min(1, dist / (window.innerHeight * 0.6));
+
+        const scale = 1.15 - norm * 0.35;
+        const opacity = 1 - norm * 0.5;
+
+        gsap.to(card, {
+          scale,
+          opacity,
+          duration: 0.2,
+        });
+      }
+    };
+
+    // Snap nearest card to center after scroll stops
+    const snapToClosest = () => {
+      const center = window.innerHeight / 2;
+
+      let closest: HTMLDivElement | null = null;
+      let minDist = Infinity;
+
+      for (let i = 0; i < cards.length; i++) {
+        const card = cards[i];
+
+        const rect = card.getBoundingClientRect();
+        const cardCenter = rect.top + rect.height / 2;
+
+        const dist = Math.abs(cardCenter - center);
+
+        if (dist < minDist) {
+          minDist = dist;
+          closest = card;
+        }
+      }
+
+      if (!closest) return;
+
+      const rect = closest.getBoundingClientRect();
+      const offset = rect.top + rect.height / 2 - center;
+
+      gsap.to(container, {
+        scrollTop: container.scrollTop + offset,
+        duration: 0.4,
+        ease: "power3.out",
+      });
+    };
+
+    const handleScroll = () => {
+      updateVisuals();
+
+      clearTimeout(timeout);
+      timeout = setTimeout(snapToClosest, 120);
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    updateVisuals();
 
     return () => {
-      window.removeEventListener("resize", handleResize);
-      ctx.revert();
+      container.removeEventListener("scroll", handleScroll);
+      clearTimeout(timeout);
     };
   }, []);
 
   return (
     <section
       ref={sectionRef}
-      className="w-full flex flex-col items-center justify-center py-[15vh] px-6 bg-transparent overflow-hidden relative"
+      className="w-full flex flex-col items-center py-[12vh] px-5"
     >
-      <h2
-        ref={titleRef}
-        className="text-5xl md:text-6xl font-light text-white text-center mb-10 tracking-tight leading-[1.2]"
-      >
-        Our Projects
-      </h2>
+      <div className="flex flex-col items-center gap-[clamp(3rem,8vh,6rem)] w-full">
+        <h2 className="text-[clamp(2.5rem,4.5vw,4rem)] text-white">
+          Our Projects
+        </h2>
 
-      <div
-        ref={deckRef}
-        className="relative w-full max-w-[200vw] h-[60vh] flex items-center justify-center"
-      >
-        {visibleProjects.map((p, i) => {
-          const cardImage =
-            p.gallery && p.gallery.length > 0
-              ? p.gallery[0]
-              : (p.image ?? "/images/placeholder.png");
-          const desc1 = p.category ?? "";
-          const desc2 = [p.location, p.year].filter(Boolean).join(" • ");
+        {/* DESKTOP */}
+        <div
+          ref={deckRef}
+          className="hidden lg:flex relative w-full max-w-[1200px] h-[70vh] items-start justify-center"
+        >
+          {visibleProjects.map((p, i) => {
+            const img = p.gallery?.[0] ?? p.image ?? "/images/placeholder.png";
 
-          return (
-            <div
-              key={p.id ?? p.slug}
-              ref={(el) => {
-                if (el) cardRefs.current[i] = el;
-              }}
-              className="w-[340px] md:w-[420px] cursor-pointer transition-transform"
-              onClick={() => {
-                if (p.slug === "more-projects") {
-                  router.push("/projects");
-                } else {
-                  window.location.href = `/projects/${encodeURIComponent(
-                    p.slug
-                  )}`;
+            return (
+              <div
+                key={p.slug}
+                className="project-card absolute 
+w-[min(11vw,14vh)] 
+h-[min(26vh,34vw)]
+cursor-pointer"
+                onClick={() =>
+                  router.push(
+                    p.slug === "more-projects"
+                      ? "/projects"
+                      : `/projects/${p.slug}`,
+                  )
                 }
-              }}
-            >
-              <ProjectCard
-                title={p.title}
-                image={cardImage}
-                index={i}
-                descriptionLine1={desc1}
-                descriptionLine2={desc2}
-              />
-            </div>
-          );
-        })}
+              >
+                <ProjectCard
+                  title={p.title}
+                  image={img}
+                  index={i}
+                  descriptionLine1={p.category ?? ""}
+                  descriptionLine2={[p.location, p.year]
+                    .filter(Boolean)
+                    .join(" • ")}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        {/* MOBILE */}
+        <div className="w-full lg:hidden flex justify-center items-center">
+          <div
+            ref={mobileDeckRef}
+            className="w-[90vw] h-[70vh] overflow-y-auto flex flex-col items-center"
+          >
+            <div className="h-[20vh]" />
+            {visibleProjects.map((p, i) => {
+              const img =
+                p.gallery?.[0] ?? p.image ?? "/images/placeholder.png";
+
+              return (
+                <div
+                  key={p.slug ?? i}
+                  className="flex items-center justify-center h-[min(65vh,80vw)]"
+                >
+                  <div className="project-card w-[min(85vw,60vh)]">
+                    <ProjectCard
+                      title={p.title}
+                      image={img}
+                      index={i}
+                      descriptionLine1={p.category ?? ""}
+                      descriptionLine2={[p.location, p.year]
+                        .filter(Boolean)
+                        .join(" • ")}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+            <div className="h-[20vh]" />
+          </div>
+        </div>
       </div>
     </section>
   );

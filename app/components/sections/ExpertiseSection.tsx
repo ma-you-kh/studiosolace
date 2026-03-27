@@ -56,8 +56,6 @@ export default function ExpertiseSection() {
     const ctx = gsap.context(() => {
       const cards = cardsRef.current;
 
-      gsap.set(cards, { opacity: 0, y: 100 });
-
       if (titleRef.current) {
         gsap.from(titleRef.current, {
           opacity: 0,
@@ -96,88 +94,96 @@ export default function ExpertiseSection() {
         },
       });
 
-      tl.to(cards, {
-        opacity: 1,
-        y: 0,
-        stagger: 0.2,
-        duration: 1,
-        ease: "power3.out",
-      })
-        .to({}, { duration: 0.15 })
-        .to(cards, {
-          y: -100,
+      tl.fromTo(
+        cards,
+        {
           opacity: 0,
-          stagger: { each: 0.2, from: "end" },
+          y: 80,
+          scale: 0.92,
+        },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          stagger: 0.15,
           duration: 1,
-          ease: "power3.in",
-        });
+          ease: "power4.out",
+        },
+      ).to(cards, {
+        y: -60,
+        opacity: 0,
+        scale: 0.95,
+        stagger: { each: 0.12, from: "end" },
+        duration: 0.8,
+        ease: "power3.inOut",
+      });
     }, section);
 
     return () => ctx.revert();
   }, []); // same deps (run once)
 
   useEffect(() => {
-  if (window.innerWidth >= 1024) return;
+    if (window.innerWidth >= 1024) return;
 
-  if (activeCard !== null) {
-    if (!overlayRef.current || !popupRef.current) return;
+    if (activeCard !== null) {
+      if (!overlayRef.current || !popupRef.current) return;
 
-    // Overlay fade in
-    gsap.fromTo(
-      overlayRef.current,
-      { opacity: 0 },
-      { opacity: 1, duration: 0.3, ease: "power2.out" }
-    );
+      // Overlay fade in
+      gsap.fromTo(
+        overlayRef.current,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.3, ease: "power2.out" },
+      );
 
-    // Popup animation
-    gsap.fromTo(
-      popupRef.current,
-      { scale: 0.92, y: 40, opacity: 0 },
-      {
-        scale: 1,
-        y: 0,
-        opacity: 1,
-        duration: 0.4,
-        ease: "power3.out",
+      // Popup animation
+      gsap.fromTo(
+        popupRef.current,
+        { scale: 0.92, y: 40, opacity: 0 },
+        {
+          scale: 1,
+          y: 0,
+          opacity: 1,
+          duration: 0.4,
+          ease: "power3.out",
+        },
+      );
+
+      // Parallax
+      const img = popupRef.current.querySelector("img");
+
+      let tween: gsap.core.Tween | null = null;
+
+      if (img) {
+        tween = gsap.to(img, {
+          scale: 1.1,
+          duration: 6,
+          ease: "sine.inOut",
+          yoyo: true,
+          repeat: -1,
+        });
       }
-    );
 
-    // Parallax
-    const img = popupRef.current.querySelector("img");
+      return () => {
+        tween?.kill();
+      };
+    } else {
+      // ✅ SAFE EXIT
+      if (!overlayRef.current) return;
 
-    let tween: gsap.core.Tween | null = null;
-
-    if (img) {
-      tween = gsap.to(img, {
-        scale: 1.1,
-        duration: 6,
-        ease: "sine.inOut",
-        yoyo: true,
-        repeat: -1,
+      gsap.to(overlayRef.current, {
+        opacity: 0,
+        duration: 0.2,
+        ease: "power2.in",
       });
     }
-
-    return () => {
-      tween?.kill();
-    };
-  } else {
-    // ✅ SAFE EXIT
-    if (!overlayRef.current) return;
-
-    gsap.to(overlayRef.current, {
-      opacity: 0,
-      duration: 0.2,
-      ease: "power2.in",
-    });
-  }
-}, [activeCard]);
+  }, [activeCard]);
 
   return (
     <section
       ref={sectionRef}
       className="relative w-full min-h-screen flex flex-col items-center justify-center py-[10vh] sm:py-[12vh] px-5 sm:px-8 bg-transparent overflow-visible"
     >
-      <div className="flex flex-col items-stretch justify-center space-y-[clamp(2rem,6vh,4rem)] w-full">
+      <div className="flex flex-col items-stretch justify-center space-y-[clamp(3rem,8vh,7rem)] w-full">
         <h2
           ref={titleRef}
           className="text-[clamp(3.0rem,4.5vw,3.8rem)] font-light text-center text-white tracking-tight leading-[1.2]"
@@ -203,7 +209,7 @@ export default function ExpertiseSection() {
                   className="w-full text-left"
                 >
                   {/* IMAGE */}
-                  <div className="w-full aspect-square relative">
+                  <div className="w-full h-[clamp(160px,22vh,260px)] relative">
                     <img
                       src={item.image}
                       alt={item.title}
