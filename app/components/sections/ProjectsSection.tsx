@@ -6,13 +6,13 @@ import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 import ProjectCard from "../cards/ProjectCard";
 import { projects, type Project } from "../../data/projects";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function ProjectsSection() {
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const deckRef = useRef<HTMLDivElement | null>(null);
-  const mobileDeckRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
 
   function isProject(p: Project | undefined): p is Project {
@@ -21,7 +21,7 @@ export default function ProjectsSection() {
 
   // Select visible projects (3 + "more")
   const visibleProjects = (() => {
-    const firstThree = projects.slice(1, 4);
+    const firstThree = projects.slice(0, 3);
     const more = projects.find((x) => x.slug === "more-projects");
     return [...firstThree, more].filter(isProject);
   })();
@@ -120,7 +120,6 @@ export default function ProjectsSection() {
 
           // Visual mapping
           const blur = Math.max(0, (1 - depth) * 2.5);
-          const opacity = depth < 0 ? 0.5 : 1;
           const scale = 0.9 + depth * 0.15;
 
           gsap.set(card, {
@@ -207,95 +206,32 @@ export default function ProjectsSection() {
   }, []);
 
   // =========================
-  // 📱 MOBILE (IOS PICKER STYLE)
+  // 📱 MOBILE (ALTERNATING CARDS)
   // =========================
   useEffect(() => {
     if (window.innerWidth >= 1024) return;
 
-    const container = mobileDeckRef.current;
-    if (!container) return;
+    const section = sectionRef.current;
+    if (!section) return;
 
-    const cards = Array.from(
-      container.querySelectorAll<HTMLDivElement>(".project-card"),
+    const cards = section.querySelectorAll(".mobile-card");
+
+    gsap.fromTo(
+      cards,
+      {
+        opacity: 0,
+        y: 40,
+        scale: 0.97,
+      },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.6,
+        ease: "power2.out",
+        stagger: 0.12,
+      },
     );
-
-    gsap.set(cards, { willChange: "transform, filter" });
-
-    if (cards.length === 0) return;
-
-    let timeout: NodeJS.Timeout;
-
-    // Dynamically scale + fade based on distance from center
-    const updateVisuals = () => {
-      const center = window.innerHeight / 2;
-
-      for (let i = 0; i < cards.length; i++) {
-        const card = cards[i];
-
-        const rect = card.getBoundingClientRect();
-        const cardCenter = rect.top + rect.height / 2;
-
-        const dist = Math.abs(cardCenter - center);
-        const norm = Math.min(1, dist / (window.innerHeight * 0.6));
-
-        const scale = 1.15 - norm * 0.35;
-        const opacity = 1 - norm * 0.5;
-
-        gsap.to(card, {
-          scale,
-          opacity,
-          duration: 0.2,
-        });
-      }
-    };
-
-    // Snap nearest card to center after scroll stops
-    const snapToClosest = () => {
-      const center = window.innerHeight / 2;
-
-      let closest: HTMLDivElement | null = null;
-      let minDist = Infinity;
-
-      for (let i = 0; i < cards.length; i++) {
-        const card = cards[i];
-
-        const rect = card.getBoundingClientRect();
-        const cardCenter = rect.top + rect.height / 2;
-
-        const dist = Math.abs(cardCenter - center);
-
-        if (dist < minDist) {
-          minDist = dist;
-          closest = card;
-        }
-      }
-
-      if (!closest) return;
-
-      const rect = closest.getBoundingClientRect();
-      const offset = rect.top + rect.height / 2 - center;
-
-      gsap.to(container, {
-        scrollTop: container.scrollTop + offset,
-        duration: 0.4,
-        ease: "power3.out",
-      });
-    };
-
-    const handleScroll = () => {
-      updateVisuals();
-
-      clearTimeout(timeout);
-      timeout = setTimeout(snapToClosest, 120);
-    };
-
-    container.addEventListener("scroll", handleScroll);
-    updateVisuals();
-
-    return () => {
-      container.removeEventListener("scroll", handleScroll);
-      clearTimeout(timeout);
-    };
   }, []);
 
   return (
@@ -346,37 +282,60 @@ cursor-pointer"
         </div>
 
         {/* MOBILE */}
-        <div className="w-full lg:hidden flex justify-center items-center">
-          <div
-            ref={mobileDeckRef}
-            className="w-[90vw] h-[70vh] overflow-y-auto flex flex-col items-center"
-          >
-            <div className="h-[20vh]" />
-            {visibleProjects.map((p, i) => {
-              const img =
-                p.gallery?.[0] ?? p.image ?? "/images/placeholder.png";
+        <div className="w-full lg:hidden flex flex-col gap-5 sm:gap-6">
+          {visibleProjects.map((p) => {
+            const img = p.gallery?.[0] ?? p.image ?? "/images/placeholder.png";
 
-              return (
-                <div
-                  key={p.slug ?? i}
-                  className="flex items-center justify-center h-[min(65vh,80vw)]"
-                >
-                  <div className="project-card w-[min(85vw,60vh)]">
-                    <ProjectCard
-                      title={p.title}
-                      image={img}
-                      index={i}
-                      descriptionLine1={p.category ?? ""}
-                      descriptionLine2={[p.location, p.year]
-                        .filter(Boolean)
-                        .join(" • ")}
-                    />
-                  </div>
+            return (
+              <div
+                key={p.slug}
+                onClick={() =>
+                  router.push(
+                    p.slug === "more-projects"
+                      ? "/projects"
+                      : `/projects/${p.slug}`,
+                  )
+                }
+                className="
+mobile-card
+w-full 
+rounded-xl 
+border border-white/10 
+bg-white/5 
+backdrop-blur-sm 
+px-1 py-1 
+transition-all duration-300 
+active:scale-[0.98]
+cursor-pointer
+"
+              >
+                {/* IMAGE */}
+                <div className="w-full aspect-[3/2] relative overflow-hidden rounded-lg">
+                  <Image
+                    src={img}
+                    alt={p.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 400px"
+                    className="object-cover"
+                  />
                 </div>
-              );
-            })}
-            <div className="h-[20vh]" />
-          </div>
+
+                {/* TEXT */}
+                <div className="px-4 py-3 flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <span className="text-white text-lg font-medium">
+                      {p.title}
+                    </span>
+                    <span className="text-white/50 text-sm">
+                      {[p.location, p.year].filter(Boolean).join(" • ")}
+                    </span>
+                  </div>
+
+                  <span className="text-white/40 text-xl">→</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

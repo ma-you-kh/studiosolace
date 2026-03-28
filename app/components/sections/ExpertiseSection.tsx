@@ -5,6 +5,7 @@ import React, { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 import ExpertiseCard from "../cards/ExpertiseCard";
+import Image from "next/image";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -210,10 +211,12 @@ export default function ExpertiseSection() {
                 >
                   {/* IMAGE */}
                   <div className="w-full h-[clamp(160px,22vh,260px)] relative">
-                    <img
+                    <Image
                       src={item.image}
                       alt={item.title}
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="(max-width: 768px) 50vw, 300px"
+                      className="object-cover"
                     />
                   </div>
 
@@ -266,11 +269,12 @@ export default function ExpertiseSection() {
           >
             {/* Image */}
             <div className="w-full aspect-[4/3] relative">
-              <img
-                style={{ transform: "scale(1.05)" }}
+              <Image
                 src={expertise[activeCard].image}
                 alt={expertise[activeCard].title}
-                className="w-full h-full object-cover"
+                fill
+                sizes="90vw"
+                className="object-cover scale-[1.05]"
               />
             </div>
 

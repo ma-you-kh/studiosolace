@@ -3,6 +3,7 @@ import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import gsap from "gsap";
 import SocialIcons from "../icons/SocialIcons";
+import Image from "next/image";
 
 const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -114,19 +115,25 @@ const Navbar: React.FC = () => {
   ${scrolled ? "py-3 md:py-4" : "py-6 md:py-8"}`}
       >
         {/* Logo */}
-        <div className="absolute left-1/2 transform -translate-x-1/2 z-40">
-          <img
-            id="navbarLogo"
-            src="/logo.png"
-            alt="Studio Solace Logo"
-            className={`object-contain cursor-pointer 
-          transition-[height,transform] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]
-          ${scrolled ? "h-10 md:h-12" : "h-14 md:h-16"}
-          hover:drop-shadow-[0_0_5px_rgba(255,255,255,1)]`}
+        <div className="absolute left-1/2 -translate-x-1/2 z-40">
+          <div
+            className={`relative cursor-pointer 
+    ${scrolled ? "h-10 md:h-12 w-10 md:w-12" : "h-14 md:h-16 w-14 md:w-16"}
+    transition-[height,width,transform] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]
+    hover:drop-shadow-[0_0_5px_rgba(255,255,255,1)]`}
             onClick={() => setMenuOpen(!menuOpen)}
-          />
+          >
+            <Image
+              id="navbarLogo"
+              src="/logo.png"
+              alt="Studio Solace Logo"
+              fill
+              priority
+              sizes="64px"
+              className="object-contain"
+            />
+          </div>
         </div>
-
         {/* Desktop: Social Icons */}
         <div className="hidden md:flex ml-auto">
           <SocialIcons />

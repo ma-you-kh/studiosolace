@@ -194,19 +194,6 @@ export default function SampleSection() {
 
   const Popup = ({ src }: { src: string }) => {
     if (typeof window === "undefined") return null;
-    const handleResetZoom = (e: React.MouseEvent<HTMLDivElement>) => {
-      const target = e.target as HTMLElement;
-      if (target.closest("button")) return;
-      if (imgRef.current) {
-        gsap.to(imgRef.current, {
-          scale: 1,
-          x: 0,
-          y: 0,
-          duration: 0.4,
-          ease: "power2.out",
-        });
-      }
-    };
     return createPortal(
       <div
         onClick={(e) => {
